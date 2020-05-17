@@ -20,8 +20,8 @@ MyWorld是我自己de项目,不晓得取啥名字,但是又想建一个项目所
 8. vue-router（用于拦截验证授权）
 9. vuex（存储用户信息）
 
-environment.js 配置abp项目授权信息以及接口地址
 ***
-vs code 打开项目 运行 "vue ui" 启动即可
+在<u>environment.js</u>配置abp项目授权信息以及接口地址  
+用 vs code 打开项目 运行 "vue ui" 启动即可
 
 

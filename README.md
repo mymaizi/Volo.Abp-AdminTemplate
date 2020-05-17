@@ -10,15 +10,15 @@ MyWorld是我自己de项目,不晓得取啥名字,但是又想建一个项目所
 
 ### 用了哪些？以及如何使用？
 
->axios(注意plugins文件夹)
->element-ui（...）
->jquery(在webpack中直接引入,注意查看vue.config.js)
->qs(注意plugins文件夹)
->sweetalert2(注意plugins文件夹)
->toastr(注意plugins文件夹)
->vue（...）
->vue-router（用于拦截验证授权）
->vuex（存储用户信息）
+1.axios(注意plugins文件夹)
+2.element-ui（...）
+3.jquery(在webpack中直接引入,注意查看vue.config.js)
+4.qs(注意plugins文件夹)
+5.sweetalert2(注意plugins文件夹)
+6.toastr(注意plugins文件夹)
+7.vue（...）
+8.vue-router（用于拦截验证授权）
+9.vuex（存储用户信息）
 
 environment.js 配置abp项目授权信息以及接口地址
 ***

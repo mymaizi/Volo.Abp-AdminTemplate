@@ -32,30 +32,6 @@ export const menus = [{
         role:"AbpTenantManagement.Tenants",
         visible:false
       }
-    ]},
-    {
-      displayName:"表管理",
-      role:["TableManagement"],
-      visible:false,
-      children:[
-      {
-        displayName:"动态表",
-        route:"/table/tables",
-        role:"TableManagement.Tables",
-        visible:false
-      }
-    ]},
-    {
-      displayName:"导航管理",
-      role:["TableManagement"],
-      visible:false,
-      children:[
-      {
-        displayName:"菜单",
-        route:"/menu/menus",
-        role:"MenuManagement.Menus",
-        visible:false
-      }
     ]}
   ]
 }]

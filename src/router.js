@@ -33,14 +33,6 @@ const routes = [
       path:'/tenant/tenants',
       name:'tenant.tenants',
       component:() => import('./views/abp/tenant/Tenants.vue')
-    },{
-      path:'/table/tables',
-      name:'table.tables',
-      component:() => import('./views/Table.vue')
-    },{
-      path:'/menu/menus',
-      name:'menu.menus',
-      component:() => import('./views/Menu.vue')
     }]
   },{
     path:'/account/login',

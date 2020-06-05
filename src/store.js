@@ -14,14 +14,18 @@ export default new Vuex.Store({
   mutations: {
     setToken:(state,payload)=>{
       state.token=payload.token;
-      window.sessionStorage.setItem("token",payload.token); 
+      window.sessionStorage.setItem("token",payload.token);
     },
-    setAppConfigs:(state,payload)=>{
-      state.appConfigs=payload.appConfigs;
+    getAppConfigs:(state)=>{
+      axios.get(`${environment.apis.default.url}/api/abp/application-configuration`).then(function(response){
+          state.appConfigs=response.data;
+          let grantedPolicies=response.data.auth.grantedPolicies;
+          window.sessionStorage.setItem("grantedPolicies",qs.stringify(grantedPolicies));
+      });
     }
   },
   actions:{
-    login({ commit, state },payload){
+    login:({commit},payload)=>{
       return new Promise((resolve, reject)=>{
         let formData={
           grant_type: "password",
@@ -37,11 +41,6 @@ export default new Vuex.Store({
           reject(error);
         });
       })
-    },
-    getAppConfigs({ commit, state },payload){
-      axios.get(`${environment.apis.default.url}/api/abp/application-configuration`).then(function(response){
-        commit("setAppConfigs",{appConfigs:response.data})
-      });
     }
   }
 })

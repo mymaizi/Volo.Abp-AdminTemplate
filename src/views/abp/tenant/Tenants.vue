@@ -3,7 +3,7 @@
     <el-row>
         <el-col :span="24">
             <el-input @input="onSearch" v-model="appTable.params.filter" placeholder="搜索" clearable style="width:200px" size="medium" />
-            <el-button style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddTenant">新租户</el-button>
+            <el-button v-show="$allowVisible('AbpTenantManagement.Tenants.Create')" style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddTenant">新租户</el-button>
         </el-col>
     </el-row>
     <el-row>
@@ -12,13 +12,13 @@
                 <template #fixed>
                     <el-table-column label="操作">
                         <template v-slot="scope">
-                            <el-dropdown @command="handleCommand" size="mini" split-button type="primary">
+                            <el-dropdown @command="appTableHandleCommand" size="mini" split-button type="primary">
                                 操作
                                 <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'conn',row:scope.row}">管理连接字符串</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'manager',row:scope.row}">管理功能</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpTenantManagement.Tenants.Update')" :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpTenantManagement.Tenants.ManageConnectionStrings')" :command="{action:'conn',row:scope.row}">管理连接字符串</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpTenantManagement.Tenants.ManageFeatures')" :command="{action:'manager',row:scope.row}">管理功能</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpTenantManagement.Tenants.Delete')" :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                         </template>
@@ -77,6 +77,14 @@
     </el-dialog>
 </div>
 </template>
+<style scoped>
+.el-row {
+    margin-bottom: 10px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+}
+</style>>
 <script>
 export default {
     data(){
@@ -173,7 +181,7 @@ export default {
             self.$refs.tenantForm.rules.adminEmailAddress[0].required=true;
             self.$refs.tenantForm.rules.adminPassword[0].required=true;
         },
-        handleCommand(command){
+        appTableHandleCommand(command){
             let self=this;
             if(command.action=="edit"){
                 self.tenantDialog={

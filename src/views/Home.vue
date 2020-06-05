@@ -17,19 +17,17 @@
             :collapse-transition="false"
             :router="true"
           >
-           <el-submenu index="1">
-              <template slot="title">
-              <i class="el-icon-setting"></i>
-              <span>管理</span>
-              </template>
-              <el-menu-item-group title="身份认证管理">
-                <el-menu-item index="/identity/roles">角色</el-menu-item>
-                <el-menu-item index="/identity/users">用户</el-menu-item>
-              </el-menu-item-group>
-              <el-menu-item-group title="租户管理">
-                <el-menu-item index="/tenant/tenants">租户</el-menu-item>
-              </el-menu-item-group>
-            </el-submenu>
+          <template v-for="(item,i) in menus">
+              <el-submenu :key="i" :index="i+''" v-if="item.target='group'" v-show="item.visible">
+                  <template slot="title">
+                    <i :class="item.icon"></i>
+                    <span>{{item.displayName}}</span>
+                  </template>
+                  <el-menu-item-group v-for="(gitem,gi) in item.children" :key="gi" :title="gitem.displayName" v-show="gitem.visible">
+                    <el-menu-item  v-for="(gcitem,gci) in gitem.children" :key="gci" :index="gcitem.route" v-show="gcitem.visible">{{gcitem.displayName}}</el-menu-item>
+                  </el-menu-item-group>
+              </el-submenu>
+          </template>
           </el-menu>
         </el-scrollbar>
       </div>
@@ -62,7 +60,7 @@
                   style="margin-right: 6px;overflow:visible"
                   size="small"
                   icon="el-icon-user-solid"
-                ></el-avatar>{{appConfigs.currentUser!=undefined?appConfigs.currentUser.userName:""}}
+                ></el-avatar>{{appConfigs.currentUser&&appConfigs.currentUser.userName}}
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
@@ -113,29 +111,49 @@
 }
 </style>
 <script>
-import { mapState } from 'vuex'
+import { mapState,mapMutations } from 'vuex'
+import {menus} from "@/menus"
 export default {
   data() {
     return {
       isCollapse: false,
       searchValue: "",
+      menus:[]
     };
+  },
+  created(){
+    this.getAppConfigs();
+  },
+  watch:{
+      'appConfigs':function(v){
+        let self=this;
+        self._.forEach(menus,function(item){
+          item.visible=self.$allowVisible(item.role);
+          if(item.target="group"){
+            self._.forEach(item.children,function(gitem){
+              gitem.visible=self.$allowVisible(gitem.role);
+              self._.forEach(gitem.children,function(gcitem){
+                gcitem.visible=self.$allowVisible(gcitem.role);
+              })
+            })
+          }
+        })        
+        self.menus=menus;
+      }
   },
   computed:{
     ...mapState(['appConfigs'])
-  }, 
-  created(){
-    this.$store.dispatch('getAppConfigs');
   },
   methods: {
+     ...mapMutations(["getAppConfigs"]),
      handleCommand(command) {
        let self=this;
        if(command=="logout"){
-         self.$http.get("/api/account/logout").then(function(){
-           self.$router.push("/account/login")
-         })
+          self.$http.get("/api/account/logout").then(function(){
+            self.$router.push("/account/login")
+          })
        }else{
-        self.$router.push(command);
+          self.$router.push(command);
        }
       }
   }

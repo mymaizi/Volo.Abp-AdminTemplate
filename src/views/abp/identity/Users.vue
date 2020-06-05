@@ -3,7 +3,7 @@
     <el-row>
         <el-col :span="24">
             <el-input @input="onSearch" v-model="appTable.params.filter" placeholder="搜索" clearable style="width:200px" size="medium" />
-            <el-button style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddUser">新用户</el-button>
+            <el-button v-show="$allowVisible('AbpIdentity.Users.Create')" style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddUser">新用户</el-button>
         </el-col>
     </el-row>
     <el-row>
@@ -12,12 +12,12 @@
                 <template #fixed>
                     <el-table-column label="操作">
                         <template v-slot="scope">
-                            <el-dropdown @command="handleCommand" size="mini" split-button type="primary">
+                            <el-dropdown @command="appTableHandleCommand" size="mini" split-button type="primary">
                                 操作
                                 <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'permis',row:scope.row}">权限</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Users.Update')" :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Users.ManagePermissions')" :command="{action:'permis',row:scope.row}">权限</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Users.Delete')&&scope.row.userName!='admin'" :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                         </template>
@@ -198,7 +198,7 @@ export default {
         onSearch(){
             this.$refs.appTable.go();
         },
-        handleCommand(command) {
+        appTableHandleCommand(command) {
             let self=this;
             if(command.action=="edit"){
                 self.userDialog={

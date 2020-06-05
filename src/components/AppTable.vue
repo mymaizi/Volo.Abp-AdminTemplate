@@ -69,6 +69,11 @@ export default {
     value: {
       type: Array,
       default: ()=>{}
+    },
+    allowInitRequest:{
+       type: Boolean,
+       required: false,
+       default: true
     }
   },
   data() {
@@ -80,7 +85,9 @@ export default {
     };
   },
   mounted() {
-    this.go();
+    if(this.allowInitRequest){
+      this.go();
+    }
   },
   methods: {
     //跳转页

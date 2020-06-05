@@ -2,7 +2,7 @@
 <div>
     <el-row>
         <el-col :span="24">
-            <el-button style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddRole">新角色</el-button>
+            <el-button v-show="$allowVisible('AbpIdentity.Roles.Create')" style="float:right" size="medium" type="primary" icon="el-icon-plus" @click="onAddRole">新角色</el-button>
         </el-col>
     </el-row>
     <el-row>
@@ -11,12 +11,12 @@
                 <template #fixed>
                     <el-table-column label="操作">
                         <template v-slot="scope">
-                            <el-dropdown @command="handleCommand" size="mini" split-button type="primary">
+                            <el-dropdown @command="appTableHandleCommand" size="mini" split-button type="primary">
                                 操作
                                 <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
-                                    <el-dropdown-item :command="{action:'permis',row:scope.row}">权限</el-dropdown-item>
-                                    <el-dropdown-item v-if="scope.row.name!='admin'" :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.Update')" :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.ManagePermissions')" :command="{action:'permis',row:scope.row}">权限</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.Delete')&&scope.row.name!='admin'" :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                         </template>
@@ -68,6 +68,14 @@
     </el-dialog>
 </div>
 </template>
+<style scoped>
+.el-row {
+    margin-bottom: 10px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+}
+</style>>
 <script>
 import AppPermis from "@/components/AppPermis.vue"
 export default {
@@ -164,7 +172,7 @@ export default {
                 flag:true
             }
         },
-        handleCommand(command){
+        appTableHandleCommand(command){
             let self=this;
             if(command.action=="edit"){
                 self.roleDialog={

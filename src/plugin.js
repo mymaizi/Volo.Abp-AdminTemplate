@@ -17,6 +17,8 @@ import {environment} from './environment'
 import qs from 'qs'
 import VueQs from "./plugins/qs"
 
+import Tools from "./plugins/tools"
+
 export default {
   install(Vue) {
     //在此进行axios基础设置 详情参考axios官方文档
@@ -30,6 +32,8 @@ export default {
     Vue.use(VueLoadsh, _)
     //设置qs
     Vue.use(VueQs, qs)
+    //设置tools
+    Vue.use(Tools,...[_,qs])
   }
 }
 

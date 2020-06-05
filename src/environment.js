@@ -1,13 +1,13 @@
 export const environment = {
   oAuthConfig: {
-    issuer: 'https://localhost:44336',
-    clientId: 'MyTest1_App',
+    issuer: 'http://localhost:5000',
+    clientId: 'MyWorld',
     clientSecret: '1q2w3e*',
-    scope: 'MyTest1'
+    scope: 'MyWorld'
   },
   apis: {
     default: {
-      url: 'https://localhost:44336'
+      url: 'http://localhost:5000'
     }
   }
 }

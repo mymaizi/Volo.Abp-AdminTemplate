@@ -29,12 +29,12 @@
     <el-dialog @open="onUserDialogOpen" :title="`${userDialog.flag?'新用户':'编辑'}`" :visible.sync="userDialog.visible">
        <el-tabs v-model="activeName">
             <el-tab-pane label="用户信息" name="user">
-                 <el-form ref="personalForm" :model="personalForm" :rules="personalRoles">
+                 <el-form ref="userDialogForm" :model="userDialog.form" :rules="userDialog.rule">
                     <el-form-item prop="userName" label="用户名称">
                         <el-input
                         placeholder="请输入用户名称"
                         clearable
-                        v-model="personalForm.userName"
+                        v-model="userDialog.form.userName"
                         ></el-input>
                     </el-form-item>
                     <el-row :gutter="30">
@@ -43,7 +43,7 @@
                         <el-input
                             placeholder="请输入名"
                             clearable
-                            v-model="personalForm.name"
+                            v-model="userDialog.form.name"
                         ></el-input>
                         </el-form-item>
                     </el-col>
@@ -52,62 +52,62 @@
                         <el-input
                             placeholder="请输入姓"
                             clearable
-                            v-model="personalForm.surname"
+                            v-model="userDialog.form.surname"
                         ></el-input>
                         </el-form-item>
                     </el-col>
                     </el-row>
-                     <el-form-item ref="personalFormPassword" prop="password" label="密码">
+                     <el-form-item ref="userDialogFormPassword" prop="password" label="密码">
                         <el-input
                         placeholder="请输入密码"
                         clearable
                         show-password
-                        v-model="personalForm.password"
+                        v-model="userDialog.form.password"
                         ></el-input>
                     </el-form-item>
                     <el-form-item prop="email" label="邮箱地址">
                         <el-input
                         placeholder="请输入邮箱地址"
                         clearable
-                        v-model="personalForm.email"
+                        v-model="userDialog.form.email"
                         ></el-input>
                     </el-form-item>
                     <el-form-item prop="phoneNumber" label="手机号码">
                         <el-input
                         placeholder="请输入手机号码"
                         clearable
-                        v-model="personalForm.phoneNumber"
+                        v-model="userDialog.form.phoneNumber"
                         ></el-input>
                     </el-form-item>
                     <el-form-item prop="lockoutEnabled">
-                         <el-checkbox v-model="personalForm.lockoutEnabled">登录失败,账户被锁定</el-checkbox>
+                         <el-checkbox v-model="userDialog.form.lockoutEnabled">登录失败,账户被锁定</el-checkbox>
                     </el-form-item>
                     <el-form-item prop="twoFactorEnabled">
-                         <el-checkbox v-model="personalForm.twoFactorEnabled">二次认证</el-checkbox>
+                         <el-checkbox v-model="userDialog.form.twoFactorEnabled">二次认证</el-checkbox>
                     </el-form-item>
                     </el-form>
             </el-tab-pane>
             <el-tab-pane label="角色" name="role">
-                <el-checkbox-group v-model="personalForm.roleNames">
+                <el-checkbox-group v-model="userDialog.form.roleNames">
                     <el-checkbox :key="item.id" :label="item.name" v-for="item in allRoles"></el-checkbox>
                 </el-checkbox-group>
             </el-tab-pane>
         </el-tabs>
         <div slot="footer">
             <el-button @click="userDialog.visible=false">取 消</el-button>
-            <el-button type="primary" @click="onSaveUser" :loading="personalFormLoading" icon="el-icon-check">保存</el-button>
+            <el-button type="primary" @click="onUserDialogSave" :loading="userDialog.loading" icon="el-icon-check">保存</el-button>
         </div>
     </el-dialog>
     <el-dialog width="76%" destroy-on-close @open="onPermisDialogOpen" :title="permisDialog.title" :visible.sync="permisDialog.visible">
-        <AppPermis v-model="permisDialog.putItems" :providerName="permisDialog.providerName" :providerKey="permisDialog.providerKey"  :isAdmin="permisDialog.isAdmin"  ref="appPermis"/>
+        <AppPermis v-model="permisDialog.putItems" :providerName="permisDialog.providerName" :providerKey="permisDialog.providerKey"  ref="appPermis"/>
         <div slot="footer">
             <el-button @click="permisDialog.visible=false">取 消</el-button>
-            <el-button type="primary" @click="onSavePermis" :loading="permisDialog.loading" icon="el-icon-check">保存</el-button>
+            <el-button type="primary" @click="onPermisDialogSave" :loading="permisDialog.loading" icon="el-icon-check">保存</el-button>
         </div>
     </el-dialog>
 </div>
 </template>
-<style scoped>
+<style lang="stylus" scoped>
 .el-row {
     margin-bottom: 10px;
     &:last-child {
@@ -135,11 +135,9 @@ export default {
             },
             userDialog:{
                 flag:true,
-                visible:false
-            },
-            activeName: 'user',
-            personalFormLoading:false,
-            personalForm:{
+                visible:false,
+                loading:false,
+                form:{
                     userName:"",
                     name:"",
                     surname:"",
@@ -150,34 +148,34 @@ export default {
                     lockoutEnabled:true,
                     roleNames:[]
                 },
-                personalRoles:{
+                rule:{
                     userName: [
-                        { required: true, message: "用户名称不能为空", trigger: "blur" },
+                        { required: true, message: "不能为空", trigger: "blur" },
                     ],
                     email: [
-                        { required: true, message: "邮箱地址不能为空", trigger: "blur" },
+                        { required: true, message: "不能为空", trigger: "blur" },
                         { type: "email",message: "请输入正确的邮箱地址",trigger: "change"}
                     ],
                     password: [
-                        { required: true,message: "密码不能为空", trigger: "blur"},
+                        { required: true,message: "不能为空", trigger: "blur"},
                         { pattern: /^(?=.*[a-zA-Z])(?=.*[1-9])(?=.*[\W]).{6,}$/,message: "密码应包括数字、大小写和特殊字符长度>=6位",trigger:"change"}
                     ]
-                },
-                allRoles:[],
-                permisDialog:{
-                    visible:false,
-                    title:"",
-                    putItems:[],
-                    loading:false,
-
-                    providerKey:"",
-                    providerName:"U",
-                    isAdmin:false
                 }
+            },
+            activeName: 'user',
+            allRoles:[],
+            permisDialog:{
+                visible:false,
+                title:"",
+                putItems:[],
+                loading:false,
+                providerKey:"",
+                providerName:"U"
+            }
         }
     },
     methods:{
-        onSavePermis(){
+        onPermisDialogSave(){
             let self=this;
             let permis=self.permisDialog;
             if(permis.putItems&&permis.putItems.length>0){
@@ -200,14 +198,14 @@ export default {
         },
         appTableHandleCommand(command) {
             let self=this;
-            if(command.action=="edit"){
-                self.userDialog={
+            if(command.action=="update"){
+                Object.assign(self.userDialog,{
                     visible:true,
                     flag:false
-                }
+                })
                self.$nextTick(function(){
-                   Object.assign(self.personalForm,command.row);
-                   self.$refs.personalForm.rules.password[0].required=false;
+                   Object.assign(self.userDialog.form,command.row);
+                   self.$refs.userDialogFormPassword.rules.password[0].required=false;
                })
             }else if(command.action=="delete"){
                  self.onDeleteUser(command.row.id);
@@ -215,43 +213,44 @@ export default {
                 self.permisDialog={
                     visible:true,
                     title:`权限 - ${command.row.userName}`,
-
                     providerKey:command.row.id,
-                    providerName:"U",
-                    isAdmin:command.row.name=="admin"
+                    providerName:"U"
                 }
             }
         },
         onUserDialogOpen(){
             let self=this;
-            if(self.$refs.personalForm){
-                self.$refs.personalForm.resetFields();
-                self.personalForm.roleNames=[];
-                self.$refs.personalForm.rules.password[0].required=true;
+            if(self.$refs.userDialogForm){
+                self.$refs.userDialogForm.resetFields();
+                self.userDialog.form.roleNames=[];
+                self.$refs.userDialogFormPassword.rules.password[0].required=true;
             }
             self.activeName='user';
             self.getAllRoles();
         },
         onAddUser(){
             let self=this;
-            self.userDialog={
+           Object.assign( self.userDialog,{
                 visible:true,
                 flag:true
-            }
+            })
         },
-        onSaveUser(){
+        onUserDialogSave(){
             let self = this;
-            self.$refs.personalForm.validate(valid => {
+            self.$refs.userDialogForm.validate(valid => {
                 if (valid) {
-                self.personalFormLoading=true;
-                self.$http(`${self.userDialog.flag?'/api/identity/users':'/api/identity/users/'+self.personalForm.id}`,{method:`${self.userDialog.flag?'post':'put'}`,data:self.personalForm}).then(function(response){
+                self.userDialog.loading=true;
+                self.$http(`${self.userDialog.flag?'/api/identity/users':'/api/identity/users/'+self.userDialog.form.id}`,{method:`${self.userDialog.flag?'post':'put'}`,data:self.userDialog.form}).then(function(response){
                     self.$toastr.success(`${self.userDialog.flag?'新增':'编辑'}成功`);
-                    self.userDialog.visible=false;
                     self.onSearch();
                 }).catch(function(error){
-                    self.$toastr.error(`${self.userDialog.flag?'新增':'编辑'}失败`);
+                    self.$toastr.error(error.response.data.error.message);
                 }).then(function(){
-                     self.personalFormLoading=false;
+                    Object.assign(self.userDialog,{
+                        loading:false,
+                        visible:false
+                        
+                    })
                 })
                 }
             })
@@ -264,7 +263,7 @@ export default {
             if(!self.userDialog.flag){
                 self.$http.get(`/api/identity/users/${self.$store.state.appConfigs.currentUser.id}/roles`).then(function(response){
                   self._.forEach(response.data.items,function(item){
-                      self.personalForm.roleNames.push(item.name);
+                      self.userDialog.form.roleNames.push(item.name);
                   })
                 })
             }            
@@ -280,7 +279,7 @@ export default {
                     self.$toastr.success('删除成功');
                     self.onSearch();
                 }).catch(function(error){
-                    self.$toastr.error('删除失败');
+                    self.$toastr.error(error.response.data.error.message);
                 })
             });
         },

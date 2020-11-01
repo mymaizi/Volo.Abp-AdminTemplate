@@ -29,6 +29,10 @@ const routes = [
       path:'/identity/roles',
       name:'identity.roles',
       component:() => import('./views/abp/identity/Roles.vue')
+    }, {
+      path: '/setting-management',
+      name: 'setting-management',
+      component: () => import('./views/abp/Settings.vue')
     },{
       path:'/tenant/tenants',
       name:'tenant.tenants',

@@ -23,9 +23,9 @@
                     <i :class="item.icon"></i>
                     <span>{{item.displayName}}</span>
                   </template>
-                  <el-menu-item-group v-for="(gitem,gi) in item.children" :key="gi" :title="gitem.displayName" v-show="gitem.visible">
+                  <el-submenu v-for="(gitem,gi) in item.children" :key="gi" :index="`${i}-${gi}`" :title="gitem.displayName" v-show="gitem.visible">
                     <el-menu-item  v-for="(gcitem,gci) in gitem.children" :key="gci" :index="gcitem.route" v-show="gcitem.visible">{{gcitem.displayName}}</el-menu-item>
-                  </el-menu-item-group>
+                  </el-submenu>
               </el-submenu>
           </template>
           </el-menu>

@@ -1,7 +1,7 @@
 export const menus = [{
   displayName:"管理",
   icon:"el-icon-setting",
-  role:["AbpIdentity","AbpTenantManagement"],
+  role:["AbpIdentity","AbpTenantManagement","AbpAccount"],
   visible:false,
   target:"group",
   children:[{
@@ -30,6 +30,18 @@ export const menus = [{
         displayName:"租户",
         route:"/tenant/tenants",
         role:"AbpTenantManagement.Tenants",
+        visible:false
+      }
+    ]},
+      {
+      displayName:"帐户中心",
+      role:["AbpAccount"],
+      visible:false,
+      children:[
+      {
+        displayName:"设置",
+        route:"/setting-management",
+        role:"AbpAccount.SettingManagement",
         visible:false
       }
     ]}

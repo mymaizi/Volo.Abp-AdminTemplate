@@ -14,7 +14,7 @@
                             <el-dropdown @command="appTableHandleCommand" size="mini" split-button type="primary">
                                 操作
                                 <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.Update')" :command="{action:'edit',row:scope.row}">编辑</el-dropdown-item>
+                                    <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.Update')" :command="{action:'update',row:scope.row}">编辑</el-dropdown-item>
                                     <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.ManagePermissions')" :command="{action:'permis',row:scope.row}">权限</el-dropdown-item>
                                     <el-dropdown-item v-show="$allowVisible('AbpIdentity.Roles.Delete')&&scope.row.name!='admin'" :command="{action:'delete',row:scope.row}">删除</el-dropdown-item>
                                 </el-dropdown-menu>
@@ -39,36 +39,36 @@
         </el-col>
     </el-row>
     <el-dialog @open="onRoleDialogOpen" :title="`${roleDialog.flag?'新角色':'编辑'}`" :visible.sync="roleDialog.visible">
-         <el-form ref="roleForm" :model="roleForm">
-                    <el-form-item prop="name" label="角色名称" :rules="[{ required: true, message: '角色名称不能为空', trigger: 'blur' }]">
+         <el-form ref="roleDialogForm" :model="roleDialog.form">
+                    <el-form-item prop="name" label="角色名称" :rules="[{ required: true, message: '不能为空', trigger: 'blur' }]">
                         <el-input
                         placeholder="请输入角色名称"
                         clearable
-                        v-model="roleForm.name"
+                        v-model="roleDialog.form.name"
                         ></el-input>
                     </el-form-item>
                      <el-form-item prop="isDefault">
-                         <el-checkbox v-model="roleForm.isDefault">默认</el-checkbox>
+                         <el-checkbox v-model="roleDialog.form.isDefault">默认</el-checkbox>
                     </el-form-item>
                     <el-form-item prop="isPublic">
-                         <el-checkbox v-model="roleForm.isPublic">公开</el-checkbox>
+                         <el-checkbox v-model="roleDialog.form.isPublic">公开</el-checkbox>
                     </el-form-item>
          </el-form>
         <div slot="footer">
             <el-button @click="roleDialog.visible=false">取 消</el-button>
-            <el-button type="primary" @click="onSaveRole" :loading="roleFormLoading" icon="el-icon-check">保存</el-button>
+            <el-button type="primary" @click="onRoleDialogSave" :loading="roleDialog.loading" icon="el-icon-check">保存</el-button>
         </div>
     </el-dialog>
      <el-dialog width="76%" destroy-on-close @open="onPermisDialogOpen" :title="permisDialog.title" :visible.sync="permisDialog.visible">
-        <AppPermis v-model="permisDialog.putItems" :providerName="permisDialog.providerName" :providerKey="permisDialog.providerKey" :isAdmin="permisDialog.isAdmin" ref="appPermis"/>
+        <AppPermis v-model="permisDialog.putItems" :providerName="permisDialog.providerName" :providerKey="permisDialog.providerKey"  ref="appPermis"/>
         <div slot="footer">
             <el-button @click="permisDialog.visible=false">取 消</el-button>
-            <el-button type="primary" @click="onSavePermis" :loading="permisDialog.loading" icon="el-icon-check">保存</el-button>
+            <el-button type="primary" @click="onPermisDialogSave" :loading="permisDialog.loading" icon="el-icon-check">保存</el-button>
         </div>
     </el-dialog>
 </div>
 </template>
-<style scoped>
+<style lang="stylus" scoped>
 .el-row {
     margin-bottom: 10px;
     &:last-child {
@@ -94,28 +94,26 @@ export default {
             },
             roleDialog:{
                 visible:false,
-                flag:false
+                flag:false,
+                loading:false,
+                form:{
+                    name:"",
+                    isPublic:false,
+                    isDefault:false
+                }
             },
-            roleForm:{
-                name:"",
-                isPublic:false,
-                isDefault:false
-            },
-            roleFormLoading:false,
             permisDialog:{
                 visible:false,
                 title:"",
                 putItems:[],
                 loading:false,
-
                 providerKey:"",
-                providerName:"R",
-                isAdmin:false
+                providerName:"R"
             }
         }
     },
     methods:{
-         onSavePermis(){
+         onPermisDialogSave(){
             let self=this;
             let permis=self.permisDialog;
             if(permis.putItems&&permis.putItems.length>0){
@@ -135,31 +133,33 @@ export default {
         },
         onPermisDialogOpen(){
             let self=this;
-            self.$nextTick().then(function(){
+            self.$nextTick(()=>{
                 self.$refs.appPermis.reload();
-            })
+            });
         },
-        onSaveRole(){
+        onRoleDialogSave(){
             let self = this;
-            self.$refs.roleForm.validate(valid => {
+            self.$refs.roleDialogForm.validate(valid => {
                 if (valid) {
-                self.roleFormLoading=true;
-                self.$http(`${self.roleDialog.flag?'/api/identity/roles':'/api/identity/roles/'+self.roleForm.id}`,{method:`${self.roleDialog.flag?'post':'put'}`,data:self.roleForm}).then(function(response){
+                self.roleDialog.loading=true;
+                self.$http(`${self.roleDialog.flag?'/api/identity/roles':'/api/identity/roles/'+self.roleForm.id}`,{method:`${self.roleDialog.flag?'post':'put'}`,data:self.roleDialog.form}).then(function(response){
                     self.$toastr.success(`${self.roleDialog.flag?'新增':'编辑'}成功`);
-                    self.roleDialog.visible=false;
                     self.onSearch();
                 }).catch(function(error){
-                    self.$toastr.error(`${self.roleDialog.flag?'新增':'编辑'}失败`);
+                    self.$toastr.error(error.response.data.error.message);
                 }).then(function(){
-                     self.roleFormLoading=false;
+                        Object.assign(self.roleDialog,{
+                            visible:false,
+                            loading:false
+                        })
                 })
                 }
             })
         },
         onRoleDialogOpen(){
             let self=this;
-            if(self.$refs.roleForm){
-                self.$refs.roleForm.resetFields();
+            if(self.$refs.roleDialogForm){
+                self.$refs.roleDialogForm.resetFields();
             }
         },
         onSearch(){
@@ -167,20 +167,20 @@ export default {
         },
         onAddRole(){
             let self=this;
-            self.roleDialog={
-                visible:true,
-                flag:true
-            }
+            Object.assign( self.roleDialog,{
+                    visible:true,
+                    flag:true
+                });
         },
         appTableHandleCommand(command){
             let self=this;
-            if(command.action=="edit"){
-                self.roleDialog={
+            if(command.action=="update"){
+               Object.assign( self.roleDialog,{
                     visible:true,
                     flag:false
-                }
+                });
                self.$nextTick(function(){
-                   Object.assign(self.roleForm,command.row);
+                   Object.assign(self.roleDialog.form,command.row);
                })
             }else if(command.action=="delete"){
                  self.onDeleteRole(command.row.id);
@@ -188,10 +188,8 @@ export default {
                 self.permisDialog={
                     visible:true,
                     title:`权限 - ${command.row.name}`,
-
                     providerKey:command.row.name,
-                    providerName:"R",
-                    isAdmin:command.row.name=="admin"
+                    providerName:"R"
                 }
             }
         },
@@ -206,7 +204,7 @@ export default {
                     self.$toastr.success('删除成功');
                     self.onSearch();
                 }).catch(function(error){
-                    self.$toastr.error('删除失败');
+                    self.$toastr.error(error.response.data.error.message);
                 })
             });
         }

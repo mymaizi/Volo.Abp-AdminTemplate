@@ -5,17 +5,26 @@
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
       :data="items"
-      @selection-change="onSelectionChange"
+      :highlight-current-row="!allowMultiple"
+      @selection-change="handleSelectionChange"
+      @current-change="handleCurrentChange"
+      @sort-change="handleSortChange"
     >
       <template v-if="allowMultiple">
-        <el-table-column type="selection"/>
+        <el-table-column type="selection" />
       </template>
-      <template v-for="(item,i) in tableColumns">
-        <slot :name="item.rowText" >
-          <el-table-column  :label="item.headerText" :key="i" :sortable="item.sortable" :prop="item.rowText"/>
+      <slot name="firstFixed" />
+      <template v-for="(item, i) in tableColumns">
+        <slot :name="item.rowText">
+          <el-table-column
+            :label="item.headerText"
+            :key="i"
+            :sortable="item.sortable"
+            :prop="item.rowText"
+          />
         </slot>
       </template>
-      <slot name="fixed" />
+      <slot name="lastFixed" />
     </el-table>
     <el-pagination
       @current-change="go"
@@ -26,11 +35,6 @@
     />
   </div>
 </template>
-<style>
-.el-table__empty-block{
-  width:100% !important;
-}
-</style>
 <script>
 export default {
   name: "AppTable",
@@ -39,53 +43,49 @@ export default {
     url: {
       type: String,
       required: true,
-      validator: function(value) {
+      validator: function (value) {
         return value != "";
-      }
+      },
     },
     //请求参数
     params: {
       type: Object,
-      required: false
     },
     //数据绑定列===>[{ headerText: "you header text", rowText: "you data field",sortable:"you field sortable to true or false" }]
     columns: {
       type: Array,
-      required: false
     },
     //分页大小
     size: {
       type: Number,
-      required: false,
-      default: 10
+      default: 10,
     },
     //允许多选
     allowMultiple: {
       type: Boolean,
-      required: false,
-      default: true
+      default: true,
     },
     //v-model
     value: {
       type: Array,
-      default: ()=>{}
+      default: () => {},
     },
-    allowInitRequest:{
-       type: Boolean,
-       required: false,
-       default: true
-    }
+    //允许加载请求数据
+    allowInitRequest: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
-      loading:false,
+      loading: false,
       items: [], //数据项
       totalCount: 0, //总数
-      tableColumns: this.columns //用于控制显示列是通过table属性传入还是通过后端请求获取
+      tableColumns: this.columns, //用于控制显示列是通过table属性传入还是通过后端请求获取
     };
   },
   mounted() {
-    if(this.allowInitRequest){
+    if (this.allowInitRequest) {
       this.go();
     }
   },
@@ -93,29 +93,47 @@ export default {
     //跳转页
     go(page = 1) {
       let self = this;
-      self.loading=true;
+      self.loading = true;
       let _params = {};
-      _params["page"] = page;
-      _params["size"] = self.size;
+      _params["skipCount"] = (page - 1) * self.size;
+      _params["maxResultCount"] = self.size;
       Object.assign(_params, self.params);
-      self.$http.get(self.url, { params: _params }).then(response => {
-        let data = response.data;
-        if (data.columns != undefined) {
-          self.tableColumns = data.columns;
-        } else if (self.tableColumns == undefined) {
-          console.log(
-            "初始化表格失败，请检查是否设置columns参数或者保证columns从后端返回！"
-          );
-        }
-        self.items = data.items;
-        self.totalCount = data.totalCount;
-      }).then(function(){
-        self.loading=false;
-      });
+      self.$http
+        .get(self.url, { params: _params })
+        .then((response) => {
+          let data = response.data;
+          if (data.columns != undefined && self.columns == undefined) {
+            self.tableColumns = data.columns;
+          } else if (self.tableColumns == undefined) {
+            console.log(
+              "初始化表格失败，请检查是否设置columns参数或者保证columns从后端返回！"
+            );
+          }
+          self.items = data.items;
+          self.totalCount = data.totalCount;
+        })
+        .then(() => {
+          self.loading = false;
+        });
     },
-    onSelectionChange(val) {
+    handleSelectionChange(val) {
       this.$emit("input", val);
-    }
-  }
+    },
+    handleCurrentChange(val) {
+      this.$emit("input", [val]);
+    },
+    handleSortChange(val) {
+      let self = this;
+      if (val.order != null) {
+        self.params["sorting"] = `${val.prop} ${val.order.replace(
+          "ending",
+          ""
+        )}`;
+      } else {
+        delete self.params.sorting;
+      }
+      self.go();
+    },
+  },
 };
 </script>

@@ -1,5 +1,4 @@
-###
-abp的操作实现可以看看wpfdemo这个库，参考的ruoyi-vue-plus
+### abp的操作实现可以看看wpfdemo这个库，参考的ruoyi-vue-plus
 
 #### 暂停更新
 原因有2
